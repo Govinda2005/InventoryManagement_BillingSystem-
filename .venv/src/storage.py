@@ -1,21 +1,34 @@
 # src/storage.py
 import csv
 import os
-from tempfile import NamedTemporaryFile
 
-def read_csv(path):
-    if not os.path.exists(path):
+# ------------------- CSV READ ------------------- #
+def read_csv(filename):
+    """Read data from a CSV file and return a list of dictionaries."""
+    if not os.path.exists(filename):
         return []
-    with open(path, newline='', encoding='utf-8') as f:
-        return list(csv.DictReader(f))
+    with open(filename, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        return list(reader)
 
-def write_csv(path, fieldnames, rows):
-    # safe write
-    tmp = NamedTemporaryFile('w', delete=False, newline='', encoding='utf-8')
-    try:
-        writer = csv.DictWriter(tmp, fieldnames=fieldnames)
+
+# ------------------- CSV WRITE ------------------- #
+def write_csv(filename, fieldnames, data):
+    """Write a list of dictionaries to a CSV file."""
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(rows)
-    finally:
-        tmp.close()
-        os.replace(tmp.name, path)
+        writer.writerows(data)
+
+
+# ------------------- APPEND SINGLE ROW ------------------- #
+def append_csv(filename, fieldnames, row):
+    """Append a single dictionary row to an existing CSV file."""
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    file_exists = os.path.exists(filename)
+    with open(filename, 'a', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(row)

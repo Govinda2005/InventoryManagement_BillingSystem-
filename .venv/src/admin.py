@@ -6,8 +6,8 @@ from src.products import list_products, find_product, update_stock, add_product
 from src.billing import save_bill_csv, save_bill_txt
 
 ADMIN_FILE = '../data/admin.csv'
-SALES_LOG = 'data/sales_log.csv'
-PRODUCTS_FILE = 'data/products.csv'
+SALES_LOG = '../data/sales_log.csv'
+PRODUCTS_FILE = '../data/products.csv'
 
 def admin_login():
     username = input("Enter admin username: ").strip()

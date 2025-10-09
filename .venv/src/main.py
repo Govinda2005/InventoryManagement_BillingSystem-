@@ -6,12 +6,12 @@ def main_menu():
         print("\n Hello , Welcome to the Inventory  Management system through console")
         login = input("\n Are you want to \n 1) login as admin \n 2) signup or login as User \n")
         if login == '1':
-            if ():
+            if admin_login():
                 while True:
                     print("\n 1) Manage Products 2) Reports 3) Exit")
-                    ch = input("Choose: ")
+                    ch = input("Choose option: ")
                     if ch == '1':
-                        print("1) Search 2) Update 3) Delete")
+                        print("\n 1) Search \n 2) Update \n 3) Delete")
                         sub = input("Choose: ")
                         if sub == '1':
                             search_product()

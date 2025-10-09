@@ -1,7 +1,7 @@
 # src/products.py
 from src.storage import read_csv, write_csv
 
-PRODUCTS_FILE = 'data/products.csv'
+PRODUCTS_FILE = '../data/products.csv'
 FIELDS = ['product_id','name','price','stock']
 
 def list_products():

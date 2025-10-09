@@ -1,0 +1,7 @@
+Order ID: ORD1759992809
+Date: 2025-10-09 12:23:29.405441
+
+Item	Qty	Price	Subtotal
+Philips	2	14.99	29.98
+
+Total: 29.98

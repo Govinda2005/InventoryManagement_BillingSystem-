@@ -1,6 +1,6 @@
 # src/main.py
 from src.admin import admin_login, search_product, update_product, delete_product, sales_report
-#from src.customer import register_customer, customer_login, customer_menu
+from src.customer import register_customer, customer_login, customer_menu
 def main_menu():
     while True:
         print("\n Hello , Welcome to the Inventory  Management system through console")

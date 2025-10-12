@@ -21,7 +21,6 @@ def admin_login():
     print("\n❌ Invalid admin credentials.")
     return False
 
-
 # ---------------- Product Management ---------------- #
 def search_product():
     pid = input("Enter Product ID to search: ").strip()
@@ -68,7 +67,6 @@ def delete_product():
         writer.writerows(new_rows)
     print("\n✅ Product deleted successfully.")
 
-
 # ---------------- Sales Reports ---------------- #
 def sales_report():
     print("\n1) Report for Current Day")
@@ -76,7 +74,6 @@ def sales_report():
     ch = input("Choose: ")
     today = datetime.date.today()
 
-    start_date, end_date = None, None
     if ch == '1':
         start_date = end_date = today
     elif ch == '2':
@@ -88,11 +85,32 @@ def sales_report():
 
     total_sales = 0
     print(f"\n📊 Sales Report ({start_date} to {end_date}):\n")
+
     with open(SALES_LOG, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            sale_date = datetime.datetime.strptime(row['date'], "%Y-%m-%d").date()
+            date_str = row['date'].strip()
+            sale_date = None
+
+            # ✅ Try both possible formats (for compatibility)
+            for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
+                try:
+                    sale_date = datetime.datetime.strptime(date_str, fmt).date()
+                    break
+                except ValueError:
+                    continue
+
+            # If still no match, skip the row gracefully
+            if not sale_date:
+                print(f"⚠️ Skipping row with invalid date: {row['date']}")
+                continue
+
+            # Filter and sum totals
             if start_date <= sale_date <= end_date:
                 print(row)
-                total_sales += float(row['total'])
+                try:
+                    total_sales += float(row['total'])
+                except ValueError:
+                    print(f"⚠️ Skipping invalid total in row: {row}")
+
     print(f"\n💰 Total Sales: {total_sales}")

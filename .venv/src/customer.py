@@ -99,7 +99,7 @@ def checkout(cid, cart):
     with open(SALES_LOG, 'a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         if not file_exists:
-            writer.writerow(['order_id','customer_id','date','total'])
+            writer.writerow([order_id, cid, datetime.date.today().strftime("%Y-%m-%d"), total])
         writer.writerow([order_id, cid, datetime.date.today(), total])
 
     # Update stock

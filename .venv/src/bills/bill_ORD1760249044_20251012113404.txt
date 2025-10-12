@@ -1,0 +1,7 @@
+Order ID: ORD1760249044
+Date: 2025-10-12 11:34:04.599996
+
+Item	Qty	Price	Subtotal
+alcatel	2	5.99	11.98
+
+Total: 11.98

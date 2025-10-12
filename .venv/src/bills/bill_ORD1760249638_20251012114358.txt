@@ -1,0 +1,7 @@
+Order ID: ORD1760249638
+Date: 2025-10-12 11:43:58.182617
+
+Item	Qty	Price	Subtotal
+Lenovo	3	1.99	5.97
+
+Total: 5.97

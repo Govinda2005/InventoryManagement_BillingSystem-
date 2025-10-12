@@ -99,12 +99,81 @@ def delete_product():
     print("\n✅ Product deleted successfully.")
 
 
+# ---------------- Low Stock Report ---------------- #
+def low_stock_report(threshold=5):
+    """
+    Generate a low stock report.
+    Products with stock < threshold are considered low-stock.
+    Saves a CSV report in REPORTS_FOLDER and prints a table to console.
+    """
+    products = list_products()
+    if not products:
+        print("\n❌ No products found in inventory.")
+        return
+
+    low_stock_items = []
+    for p in products:
+        stock_val = p.get('stock', '').strip()
+        try:
+            # handle floats like "3.0" and non-int strings gracefully
+            stock_num = int(float(stock_val)) if stock_val != '' else 0
+        except (ValueError, TypeError):
+            # if stock cannot be parsed, skip and warn
+            print(f"⚠️ Skipping product with invalid stock value: {p}")
+            continue
+
+        if stock_num < threshold:
+            # ensure output uses consistent types/strings
+            low_stock_items.append({
+                'product_id': p.get('product_id', ''),
+                'name': p.get('name', ''),
+                'price': p.get('price', ''),
+                'stock': str(stock_num)
+            })
+
+    if not low_stock_items:
+        print(f"\n✅ No low-stock products found (threshold: {threshold}).")
+        return
+
+    # Print low-stock table
+    print(f"\n📉 Low Stock Report (stock < {threshold}):")
+    print("-" * 70)
+    print(f"{'Product ID':<15}{'Name':<30}{'Price':<12}{'Stock':<8}")
+    print("-" * 70)
+    for item in low_stock_items:
+        print(f"{item['product_id']:<15}{item['name']:<30}{item['price']:<12}{item['stock']:<8}")
+    print("-" * 70)
+    print(f"Total low-stock items: {len(low_stock_items)}")
+
+    # Save report to CSV
+    os.makedirs(REPORTS_FOLDER, exist_ok=True)
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    report_file = os.path.join(REPORTS_FOLDER, f"low_stock_report_{timestamp}.csv")
+
+    with open(report_file, 'w', newline='', encoding='utf-8') as rf:
+        fieldnames = ['product_id', 'name', 'price', 'stock']
+        writer = csv.DictWriter(rf, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(low_stock_items)
+        # add summary row
+        writer.writerow({})
+        writer.writerow({'product_id': 'TOTAL LOW STOCK', 'stock': len(low_stock_items)})
+
+    print(f"\n📁 Low-stock report saved successfully at: {report_file}")
+
+
 # ---------------- Sales Reports ---------------- #
 def sales_report():
     print("\n1) Report for Current Day")
     print("2) Report for Custom Date Range")
+    print("3) Low Stock Report")  # <-- new option added
     ch = input("Choose: ")
     today = datetime.date.today()
+
+    if ch == '3':
+        # call the low-stock report and return (keeps previous logic intact)
+        low_stock_report()
+        return
 
     if ch == '1':
         start_date = end_date = today

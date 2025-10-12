@@ -1,0 +1,8 @@
+Order ID: ORD1760251092
+Date: 2025-10-12 12:08:12.150140
+
+Item	Qty	Price	Subtotal
+Samsung	2	59.99	119.98
+Nokia	2	49.99	99.98
+
+Total: 219.96

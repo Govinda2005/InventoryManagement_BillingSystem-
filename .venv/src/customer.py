@@ -35,11 +35,30 @@ def customer_login():
     return None
 
 
+# ---------------- Helper Function: Display Cart ---------------- #
+def display_cart(cart):
+    """Display cart items in tabular format."""
+    if not cart:
+        print("\n🛒 Your cart is empty.")
+        return
+    print("\n🛍️  Your Cart:")
+    print("-" * 60)
+    print(f"{'Product ID':<12}{'Name':<20}{'Qty':<10}{'Price':<10}{'Subtotal':<10}")
+    print("-" * 60)
+    for item in cart:
+        subtotal = float(item['price']) * item['qty']
+        print(f"{item['product_id']:<12}{item['name']:<20}{item['qty']:<10}{item['price']:<10}{subtotal:<10}")
+    print("-" * 60)
+    total = sum(float(it['price']) * it['qty'] for it in cart)
+    print(f"{'Total':<12}{'':<20}{'':<10}{'':<10}{total:<10}")
+    print("-" * 60)
+
+
 # ---------------- Cart Management ---------------- #
 def customer_menu(cid):
     cart = []
     while True:
-        print("\n1) View Products\n2) Add to Cart\n3) Update Cart\n4) Remove Item\n5) Checkout\n6) Exit")
+        print("\n1) View Products\n2) Add to Cart\n3) Update Cart\n4) Remove Item\n5) View Cart\n6) Checkout\n7) Exit")
         ch = input("Choose: ")
 
         if ch == '1':
@@ -55,7 +74,13 @@ def customer_menu(cid):
             elif int(product['stock']) < qty:
                 print("❌ Not enough stock.")
             else:
-                cart.append({'product_id': pid, 'name': product['name'], 'price': product['price'], 'qty': qty})
+                # If item already exists in cart, update qty
+                for it in cart:
+                    if it['product_id'] == pid:
+                        it['qty'] += qty
+                        break
+                else:
+                    cart.append({'product_id': pid, 'name': product['name'], 'price': product['price'], 'qty': qty})
                 print("✅ Added to cart.")
 
         elif ch == '3':
@@ -70,14 +95,26 @@ def customer_menu(cid):
 
         elif ch == '4':
             pid = input("Enter product ID to remove: ")
-            cart = [it for it in cart if it['product_id'] != pid]
-            print("✅ Removed if existed.")
+            new_cart = [it for it in cart if it['product_id'] != pid]
+            if len(new_cart) < len(cart):
+                cart = new_cart
+                print("✅ Removed successfully.")
+            else:
+                print("❌ Item not found in cart.")
 
         elif ch == '5':
-            checkout(cid, cart)
-            break
+            display_cart(cart)
 
         elif ch == '6':
+            if not cart:
+                print("\n⚠️ You cannot checkout because your cart is empty.")
+            else:
+                display_cart(cart)
+                checkout(cid, cart)
+                cart.clear()  # clear cart after successful checkout
+            break
+
+        elif ch == '7':
             break
 
 
@@ -90,6 +127,23 @@ def checkout(cid, cart):
     total = sum(float(it['price']) * it['qty'] for it in cart)
     order_id = f"ORD{int(datetime.datetime.now().timestamp())}"
     print(f"\n🧾 Generating Bill for {order_id} ...")
+
+    # Display bill in console
+    print("\n===== BILL SUMMARY =====")
+    print(f"Order ID: {order_id}")
+    print(f"Customer ID: {cid}")
+    print(f"Date: {datetime.date.today()}")
+    print("-" * 60)
+    print(f"{'Product':<20}{'Qty':<10}{'Price':<10}{'Subtotal':<10}")
+    print("-" * 60)
+    for it in cart:
+        subtotal = float(it['price']) * it['qty']
+        print(f"{it['name']:<20}{it['qty']:<10}{it['price']:<10}{subtotal:<10}")
+    print("-" * 60)
+    print(f"{'Total':<20}{'':<10}{'':<10}{total:<10}")
+    print("=" * 60)
+
+    # Save bill files
     save_bill_txt(order_id, cart, total)
     save_bill_csv(order_id, cart, total)
 
@@ -99,8 +153,8 @@ def checkout(cid, cart):
     with open(SALES_LOG, 'a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         if not file_exists:
-            writer.writerow([order_id, cid, datetime.date.today().strftime("%Y-%m-%d"), total])
-        writer.writerow([order_id, cid, datetime.date.today(), total])
+            writer.writerow(['order_id', 'customer_id', 'date', 'total'])
+        writer.writerow([order_id, cid, datetime.date.today().strftime("%Y-%m-%d"), total])
 
     # Update stock
     for it in cart:

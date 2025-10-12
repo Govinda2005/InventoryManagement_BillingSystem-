@@ -11,7 +11,7 @@ def generate_bill_id():
     return f"INV{timestamp}{rand_suffix}"
 
 
-def save_bill_txt(order_id, items, total, folder='bills', user_id=None):
+def save_bill_txt(order_id, items, total, folder='../bills', user_id=None):
     """Save bill in .txt format with proper invoice structure."""
     os.makedirs(folder, exist_ok=True)
     now = datetime.datetime.now()
@@ -56,7 +56,7 @@ def save_bill_txt(order_id, items, total, folder='bills', user_id=None):
     return fname
 
 
-def save_bill_csv(order_id, items, total, folder='bills', user_id=None):
+def save_bill_csv(order_id, items, total, folder='../bills', user_id=None):
     """Save bill in .csv format for record keeping."""
     os.makedirs(folder, exist_ok=True)
     now = datetime.datetime.now()

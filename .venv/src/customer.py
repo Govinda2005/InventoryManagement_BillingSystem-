@@ -144,9 +144,8 @@ def checkout(cid, cart):
     print("=" * 60)
 
     # Save bill files
-    save_bill_txt(order_id, cart, total)
-    save_bill_csv(order_id, cart, total)
-
+    save_bill_txt(order_id, cart, total, user_id=cid)
+    save_bill_csv(order_id, cart, total, user_id=cid)
     # Log sale
     os.makedirs('data', exist_ok=True)
     file_exists = os.path.exists(SALES_LOG)

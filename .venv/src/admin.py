@@ -9,52 +9,57 @@ SALES_LOG = '../data/sales_log.csv'
 PRODUCTS_FILE = '../data/products.csv'
 REPORTS_FOLDER = '../reports' 
 
+
 def admin_login():
     username = input("Enter username: ").strip()
     password = input("Enter password: ").strip()
-    with open(ADMIN_FILE, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row['username'] == username and row['password'] == password:
-                print("Hello govind, you logged in successfully")
-                return True
-    print("Invalid admin username and password.")
+    
+    try: 
+        with open(ADMIN_FILE, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if row['username'] == username and row['password'] == password:
+                    print(f"\nWelcome back, {username}!") 
+                    return True
+    except FileNotFoundError:
+        print("Admin file not found. Check your paths.")
+        return False
+    print("invalid admin username or password.")
     return False
 
-
-# ---------------- Helper Function: Display Products ---------------- #
 def view_products():
     products = list_products()
     if not products:
-        print(" No valid product found in the store.")
+        print("No valid product found in the store.")
         return
 
-    print("Product List:")
-    print("----------------------------------------------------------------------------")
-    print(f"{'Product ID':<20}{'Name':<50}{'Price':<10}{'Stock':<15}")
-    print("-----------------------------------------------------------------------------")
+    print("\n--- Current Inventory ---")
+    
+    print("ID\t\tNAME\t\t\t\t\tPRICE\t\tSTOCK") 
+    print("-------------------------------------------------------------------------------------------------")
+    
     for p in products:
-        print(f"{p['product_id']:<20}{p['name']:<50}{p['price']:<10}{p['stock']:<15}")
-    print("----------------------------------------------")
+        print(f"{p['product_id']}\t\t{p['name']}\t\t\t\t{p['price']}\t\t{p['stock']}")
+        
+    print("-------------------------")
     total = len(products)
-    print(f"Products total is: {total}")
-    print("-----------------------------------------------")
+    print(f"Total items in inventory: {total}")
+    print("-------------------------")
 
 
-# ---------------- Product Management ---------------- #
 def search_product():
     pid = input("Enter the Product ID: ").strip()
     product = find_product(pid)
     if product:
-        print("\n Product Found:")
+        print("\nFound the product:")
         print("----------------------------------------")
-        print(f"{'Product ID':<20}: {product['product_id']}")
-        print(f"{'Name':<50}: {product['name']}")
-        print(f"{'Price':<10}: {product['price']}")
-        print(f"{'Stock':<15}: {product['stock']}")
+        print(f"Product ID: {product['product_id']}")
+        print(f"Name: {product['name']}")
+        print(f"Price: {product['price']}")
+        print(f"Stock: {product['stock']}")
         print("-----------------------------------------")
     else:
-        print("\n No Product found.")
+        print("\nProduct not found, try again.")
 
 
 def update_product():
@@ -78,28 +83,29 @@ def update_product():
         writer = csv.DictWriter(f, fieldnames=['product_id', 'name', 'price', 'stock'])
         writer.writeheader()
         writer.writerows(rows)
-    print("\n Product updated successfully.")
+    print("\nSuccessfully updated product.") 
 
 
 def delete_product():
     pid = input("Enter Product ID to delete: ").strip()
     rows = list_products()
     new_rows = [r for r in rows if r['product_id'] != pid]
+    
     if len(new_rows) == len(rows):
-        print(" Product not found.")
+        print("Product ID not found in list.")
         return
+        
     with open(PRODUCTS_FILE, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=['product_id', 'name', 'price', 'stock'])
         writer.writeheader()
         writer.writerows(new_rows)
-    print("\n Product deleted successfully.")
+        
+    print("\nProduct removed from inventory.")
 
-
-# ---------------- Low Stock Report ---------------- #
 def low_stock_report(threshold=3):
     products = list_products()
     if not products:
-        print("\n No products found in store.")
+        print("\nInventory is empty.")
         return
 
     low_stock_items = []
@@ -107,114 +113,97 @@ def low_stock_report(threshold=3):
         stock_val = p.get('stock', '').strip()
         try:
             stock_num = int(float(stock_val)) if stock_val != '' else 0
-        except (ValueError, TypeError):
-            print(f"⚠️ Skipping product with invalid stock value: {p}")
+        except (ValueError, TypeError): 
+            print(f"Something is wrong with the stock value for product: {p['product_id']}")
             continue
 
         if stock_num < threshold:
-            # ensure output uses consistent types/strings
-            low_stock_items.append({
-                'product_id': p.get('product_id', ''),
-                'name': p.get('name', ''),
-                'price': p.get('price', ''),
-                'stock': str(stock_num)
-            })
+            low_stock_items.append(p) 
 
     if not low_stock_items:
-        print(f"\n✅ No low-stock products found (threshold: {threshold}).")
+        print(f"\nEverything is stocked up! (Threshold was {threshold}).")
         return
 
-    # Print low-stock table
-    print(f"\n📉 Low Stock Report (stock < {threshold}):")
-    print("-" * 70)
-    print(f"{'Product ID':<15}{'Name':<30}{'Price':<12}{'Stock':<8}")
-    print("-" * 70)
+    print(f"\n--- Products Running Low (Stock < {threshold}) ---")
+    print("ID\t\tNAME\t\tSTOCK")
+    print("-------------------------------------")
     for item in low_stock_items:
-        print(f"{item['product_id']:<15}{item['name']:<30}{item['price']:<12}{item['stock']:<8}")
-    print("-" * 70)
-    print(f"Total low-stock items: {len(low_stock_items)}")
+        print(f"{item['product_id']}\t\t{item['name']}\t\t{item['stock']}")
+        
+    print(f"\nTotal items to order: {len(low_stock_items)}")
 
-    # Save report to CSV
     os.makedirs(REPORTS_FOLDER, exist_ok=True)
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     report_file = os.path.join(REPORTS_FOLDER, f"low_stock_report_{timestamp}.csv")
 
     with open(report_file, 'w', newline='', encoding='utf-8') as rf:
-        fieldnames = ['product_id', 'name', 'price', 'stock']
+        fieldnames = ['product_id', 'name', 'price', 'stock'] 
         writer = csv.DictWriter(rf, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(low_stock_items)
-        # add summary row
-        writer.writerow({})
-        writer.writerow({'product_id': 'TOTAL LOW STOCK', 'stock': len(low_stock_items)})
-
-    print(f"\n📁 Low-stock report saved successfully at: {report_file}")
+        
+    print(f"\nSaved report to: {report_file}")
 
 
-# ---------------- Sales Reports ---------------- #
 def sales_report():
-    print("\n1) Report for Current Day")
-    print("2) Report for Custom Date Range")
-    print("3) Low Stock Report")  # <-- new option added
+    print("\n*** Sales Report Options ***") 
+    print("1) Today's Report")
+    print("2) Custom Dates")
+    print("3) Low Stock Report (For inventory)")
     ch = input("Choose: ")
     today = datetime.date.today()
 
     if ch == '3':
-        # call the low-stock report and return (keeps previous logic intact)
         low_stock_report()
         return
 
     if ch == '1':
         start_date = end_date = today
     elif ch == '2':
-        start_date = datetime.datetime.strptime(input("Enter start date (YYYY-MM-DD): "), "%Y-%m-%d").date()
-        end_date = datetime.datetime.strptime(input("Enter end date (YYYY-MM-DD): "), "%Y-%m-%d").date()
+        try:
+            start_date = datetime.datetime.strptime(input("Start date (YYYY-MM-DD): "), "%Y-%m-%d").date()
+            end_date = datetime.datetime.strptime(input("End date (YYYY-MM-DD): "), "%Y-%m-%d").date()
+        except ValueError:
+            print("Date input was wrong. Use YYYY-MM-DD.")
+            return
     else:
-        print("Invalid choice.")
+        print("Not a valid choice.")
         return
 
-    total_sales = 0
+    total_sales = 0.0
     report_data = []
 
-    print(f"\n📊 Sales Report ({start_date} to {end_date}):\n")
+    print(f"\nReport for {start_date} to {end_date}:\n")
 
     if not os.path.exists(SALES_LOG):
-        print("❌ No sales data found.")
+        print("No sales log file found.")
         return
 
     with open(SALES_LOG, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             date_str = row.get('date', '').strip()
-            sale_date = None
 
-            # ✅ Try both possible formats (for compatibility)
-            for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
-                try:
-                    sale_date = datetime.datetime.strptime(date_str, fmt).date()
-                    break
-                except ValueError:
-                    continue
-
-            if not sale_date:
-                print(f"⚠️ Skipping row with invalid date: {row}")
+            try:
+                sale_date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                print(f"Couldn't read date in row: {row}")
                 continue
 
             if start_date <= sale_date <= end_date:
                 report_data.append(row)
                 print(row)
                 try:
-                    total_sales += float(row['total'])
+                    total_sales += float(row.get('total', 0.0)) 
                 except ValueError:
-                    print(f"⚠️ Skipping invalid total in row: {row}")
+                    print(f"Total sales data is bad in row: {row}")
 
-    print(f"\n💰 Total Sales: {total_sales}")
+    print(f"\nTOTAL SALES: {total_sales}")
 
-    # ---------------- Save Report to CSV ---------------- #
     if report_data:
         os.makedirs(REPORTS_FOLDER, exist_ok=True)
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_file = os.path.join(REPORTS_FOLDER, f"report_{timestamp}.csv")
+        report_file = os.path.join(REPORTS_FOLDER, f"sales_report_{timestamp}.csv")
 
         with open(report_file, 'w', newline='', encoding='utf-8') as rf:
             fieldnames = report_data[0].keys()
@@ -222,10 +211,6 @@ def sales_report():
             writer.writeheader()
             writer.writerows(report_data)
 
-            # Add summary row
-            writer.writerow({})
-            writer.writerow({'order_id': 'TOTAL SALES', 'total': total_sales})
-
-        print(f"\n📁 Report saved successfully at: {report_file}")
+        print(f"\nReport saved: {report_file}")
     else:
-        print("\n⚠️ No sales found for the selected date range.")
+        print("\nNo sales in this date range.")

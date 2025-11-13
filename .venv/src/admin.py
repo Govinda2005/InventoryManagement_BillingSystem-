@@ -1,4 +1,3 @@
-# src/admin.py
 import csv
 import datetime
 import os
@@ -8,57 +7,54 @@ from src.billing import save_bill_csv, save_bill_txt
 ADMIN_FILE = '../data/admin.csv'
 SALES_LOG = '../data/sales_log.csv'
 PRODUCTS_FILE = '../data/products.csv'
-REPORTS_FOLDER = '../reports'   # Folder to store generated reports
+REPORTS_FOLDER = '../reports' 
 
-
-# ---------------- Admin Login ---------------- #
 def admin_login():
-    username = input("Enter admin username: ").strip()
-    password = input("Enter admin password: ").strip()
+    username = input("Enter username: ").strip()
+    password = input("Enter password: ").strip()
     with open(ADMIN_FILE, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             if row['username'] == username and row['password'] == password:
-                print("\n✅ Login successful. Welcome Admin!")
+                print("Hello govind, you logged in successfully")
                 return True
-    print("\n❌ Invalid admin credentials.")
+    print("Invalid admin username and password.")
     return False
 
 
 # ---------------- Helper Function: Display Products ---------------- #
 def view_products():
-    """Display all products in a clean tabular format."""
     products = list_products()
     if not products:
-        print("\n❌ No products found in inventory.")
+        print(" No valid product found in the store.")
         return
 
-    print("\n📦 Product List:")
-    print("-" * 70)
-    print(f"{'Product ID':<15}{'Name':<25}{'Price':<15}{'Stock':<10}")
-    print("-" * 70)
+    print("Product List:")
+    print("----------------------------------------------------------------------------")
+    print(f"{'Product ID':<20}{'Name':<50}{'Price':<10}{'Stock':<15}")
+    print("-----------------------------------------------------------------------------")
     for p in products:
-        print(f"{p['product_id']:<15}{p['name']:<25}{p['price']:<15}{p['stock']:<10}")
-    print("-" * 70)
+        print(f"{p['product_id']:<20}{p['name']:<50}{p['price']:<10}{p['stock']:<15}")
+    print("----------------------------------------------")
     total = len(products)
-    print(f"Total Products: {total}")
-    print("-" * 70)
+    print(f"Products total is: {total}")
+    print("-----------------------------------------------")
 
 
 # ---------------- Product Management ---------------- #
 def search_product():
-    pid = input("Enter Product ID to search: ").strip()
+    pid = input("Enter the Product ID: ").strip()
     product = find_product(pid)
     if product:
-        print("\nProduct Found:")
-        print("-" * 50)
-        print(f"{'Product ID':<15}: {product['product_id']}")
-        print(f"{'Name':<15}: {product['name']}")
-        print(f"{'Price':<15}: {product['price']}")
+        print("\n Product Found:")
+        print("----------------------------------------")
+        print(f"{'Product ID':<20}: {product['product_id']}")
+        print(f"{'Name':<50}: {product['name']}")
+        print(f"{'Price':<10}: {product['price']}")
         print(f"{'Stock':<15}: {product['stock']}")
-        print("-" * 50)
+        print("-----------------------------------------")
     else:
-        print("\n❌ Product not found.")
+        print("\n No Product found.")
 
 
 def update_product():
@@ -82,7 +78,7 @@ def update_product():
         writer = csv.DictWriter(f, fieldnames=['product_id', 'name', 'price', 'stock'])
         writer.writeheader()
         writer.writerows(rows)
-    print("\n✅ Product updated successfully.")
+    print("\n Product updated successfully.")
 
 
 def delete_product():
@@ -90,35 +86,28 @@ def delete_product():
     rows = list_products()
     new_rows = [r for r in rows if r['product_id'] != pid]
     if len(new_rows) == len(rows):
-        print("❌ Product not found.")
+        print(" Product not found.")
         return
     with open(PRODUCTS_FILE, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=['product_id', 'name', 'price', 'stock'])
         writer.writeheader()
         writer.writerows(new_rows)
-    print("\n✅ Product deleted successfully.")
+    print("\n Product deleted successfully.")
 
 
 # ---------------- Low Stock Report ---------------- #
-def low_stock_report(threshold=5):
-    """
-    Generate a low stock report.
-    Products with stock < threshold are considered low-stock.
-    Saves a CSV report in REPORTS_FOLDER and prints a table to console.
-    """
+def low_stock_report(threshold=3):
     products = list_products()
     if not products:
-        print("\n❌ No products found in inventory.")
+        print("\n No products found in store.")
         return
 
     low_stock_items = []
     for p in products:
         stock_val = p.get('stock', '').strip()
         try:
-            # handle floats like "3.0" and non-int strings gracefully
             stock_num = int(float(stock_val)) if stock_val != '' else 0
         except (ValueError, TypeError):
-            # if stock cannot be parsed, skip and warn
             print(f"⚠️ Skipping product with invalid stock value: {p}")
             continue
 

@@ -4,6 +4,8 @@ import datetime
 import os
 import random
 
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+BILLS_DIR = os.path.join(BASE_DIR, 'bills')
 # generating the random bill id
 def makeBill_Id():
     """Makes a unique bill ID by mixing timestamp and some random chars."""
@@ -13,7 +15,7 @@ def makeBill_Id():
     return f"INV-{ts}-{rand_part}" 
 
 # writing the bill contents
-def write_bill(order_num, items_list, final_total, output_dir='../bills', user_id=None):
+def write_BillAsText(order_num, items_list, final_total, output_dir='../bills', user_id=None):
     """Saves the bill as a messy but functional .txt invoice."""
     
     # setting the date
@@ -24,7 +26,7 @@ def write_bill(order_num, items_list, final_total, output_dir='../bills', user_i
     date_part = now.strftime("%Y%m%d") 
     time_part = now.strftime("%H%M")
     #getting the bill id from make bill id method
-    bill_id = make_bill_id()
+    bill_id = makeBill_Id()
     
 
     user_key = user_id if user_id else "Guest"
@@ -62,14 +64,14 @@ def write_bill(order_num, items_list, final_total, output_dir='../bills', user_i
     return file_name
 
 #saving the bill as csv 
-def save_CSVFile(order_num, items_list, final_total, output_dir='../bills', user_id=None): # Renamed function
+def write_BillAsCSV(order_num, items_list, final_total, output_dir='../bills', user_id=None): # Renamed function
     """Saves bill details to a CSV file for back office records."""
     os.makedirs(output_dir, exist_ok=True)
     now = datetime.datetime.now()
     
     date_part = now.strftime("%Y%m%d")
     time_part = now.strftime("%H%M")
-    bill_id = make_bill_id()
+    bill_id = makeBill_Id()
 
     user_key = user_id if user_id else "Guest"
     file_name = f"{output_dir}/log_{user_key}_{date_part}_{time_part}.csv" 

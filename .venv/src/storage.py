@@ -1,8 +1,7 @@
-# src/storage.py
 import csv
 import os
 
-# ------------------- CSV READ ------------------- #
+# read csv file logic
 def read_csv(filename):
     """Read data from a CSV file and return a list of dictionaries."""
     if not os.path.exists(filename):
@@ -12,7 +11,7 @@ def read_csv(filename):
         return list(reader)
 
 
-# ------------------- CSV WRITE ------------------- #
+# write to a csv file logic
 def write_csv(filename, fieldnames, data):
     """Write a list of dictionaries to a CSV file."""
     os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -22,7 +21,7 @@ def write_csv(filename, fieldnames, data):
         writer.writerows(data)
 
 
-# ------------------- APPEND SINGLE ROW ------------------- #
+# appending to csv file logic
 def append_csv(filename, fieldnames, row):
     """Append a single dictionary row to an existing CSV file."""
     os.makedirs(os.path.dirname(filename), exist_ok=True)

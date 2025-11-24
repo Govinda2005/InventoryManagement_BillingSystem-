@@ -1,33 +1,34 @@
 import csv
 import datetime
 import os
-from src.products import list_products, find_product, update_stock, add_product
-from src.billing import save_bill_csv, save_bill_txt
+from products import list_products, find_product
 
-ADMIN_FILE = '../data/admin.csv'
-SALES_LOG = '../data/sales_log.csv'
-PRODUCTS_FILE = '../data/products.csv'
-REPORTS_FOLDER = '../reports' 
+BASE_DIR = os.path.dirname(__file__)
+DATA_DIR = os.path.join(BASE_DIR, "data")
+ADMIN_FILE = os.path.join(DATA_DIR, "admin.csv")
+REPORTS_FOLDER = os.path.join(DATA_DIR, "reports")
+SALES_LOG = os.path.join(DATA_DIR, "sales_log.csv")
+PRODUCTS_FILE = os.path.join(DATA_DIR, "products.csv")
 
-
-def admin_login():
+# implementation for admin login function
+def loginAdmin():
     username = input("Enter username: ").strip()
     password = input("Enter password: ").strip()
     
     try: 
         with open(ADMIN_FILE, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
+            #checking usrname and password are valid?
             for row in reader:
                 if row['username'] == username and row['password'] == password:
-                    print(f"\nWelcome back, {username}!") 
+                    print(f"\n \t Welcome back, {username}!") 
                     return True
-    except FileNotFoundError:
-        print("Admin file not found. Check your paths.")
+    except Exception as e:
+        print("Invalid admin credentials")
         return False
-    print("invalid admin username or password.")
     return False
-
-def view_products():
+#function to display the products
+def displayProd_details():
     products = list_products()
     if not products:
         print("No valid product found in the store.")
@@ -46,9 +47,11 @@ def view_products():
     print(f"Total items in inventory: {total}")
     print("-------------------------")
 
-
-def search_product():
+#function for search among the products
+def searchProd():
+    #enter the products to be searched
     pid = input("Enter the Product ID: ").strip()
+    #call find_product function
     product = find_product(pid)
     if product:
         print("\nFound the product:")
@@ -61,8 +64,8 @@ def search_product():
     else:
         print("\nProduct not found, try again.")
 
-
-def update_product():
+#function for updating a products
+def updateProd():
     pid = input("Enter Product ID to update: ").strip()
     product = find_product(pid)
     if not product:
@@ -75,6 +78,7 @@ def update_product():
     stock = input("Enter new stock (leave blank to keep same): ") or product['stock']
 
     rows = list_products()
+    # updating the products
     for r in rows:
         if r['product_id'] == pid:
             r['name'], r['price'], r['stock'] = name, price, stock
@@ -85,8 +89,8 @@ def update_product():
         writer.writerows(rows)
     print("\nSuccessfully updated product.") 
 
-
-def delete_product():
+#function for deleting a products
+def deleteProd():
     pid = input("Enter Product ID to delete: ").strip()
     rows = list_products()
     new_rows = [r for r in rows if r['product_id'] != pid]
@@ -94,7 +98,7 @@ def delete_product():
     if len(new_rows) == len(rows):
         print("Product ID not found in list.")
         return
-        
+    #deleting the products    
     with open(PRODUCTS_FILE, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=['product_id', 'name', 'price', 'stock'])
         writer.writeheader()
@@ -102,6 +106,7 @@ def delete_product():
         
     print("\nProduct removed from inventory.")
 
+#function for take low stock reports
 def low_stock_report(threshold=3):
     products = list_products()
     if not products:
@@ -123,7 +128,7 @@ def low_stock_report(threshold=3):
     if not low_stock_items:
         print(f"\nEverything is stocked up! (Threshold was {threshold}).")
         return
-
+     #printing the low stock products
     print(f"\n--- Products Running Low (Stock < {threshold}) ---")
     print("ID\t\tNAME\t\tSTOCK")
     print("-------------------------------------")
@@ -144,15 +149,15 @@ def low_stock_report(threshold=3):
         
     print(f"\nSaved report to: {report_file}")
 
-
+#function for taking sales report
 def sales_report():
     print("\n*** Sales Report Options ***") 
-    print("1) Today's Report")
-    print("2) Custom Dates")
-    print("3) Low Stock Report (For inventory)")
+    print("1) current day report")
+    print("2) Custom day range")
+    print("3) Low Stock prod  Report ")
     ch = input("Choose: ")
     today = datetime.date.today()
-
+     #based on the input taking the sales report
     if ch == '3':
         low_stock_report()
         return
@@ -199,7 +204,7 @@ def sales_report():
                     print(f"Total sales data is bad in row: {row}")
 
     print(f"\nTOTAL SALES: {total_sales}")
-
+    #saving the report after modifying
     if report_data:
         os.makedirs(REPORTS_FOLDER, exist_ok=True)
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")

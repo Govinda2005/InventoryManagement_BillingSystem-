@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# to find imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import admin
 import customer
@@ -21,7 +22,7 @@ def main_menu():
                         print("\n 1) View Products  \n 2) Search Products \n 3) Update Products  \n 4) Delete Products")
                         sub = input("Choose: ")
                         if sub == '1':
-                            admin.displayProd()
+                            admin.displayProd_details()
                         elif sub == '2':
                             admin.searchProd()
                         elif sub == '3':
